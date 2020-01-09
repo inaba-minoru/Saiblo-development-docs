@@ -1,0 +1,6 @@
+site_name: Saiblo 平台开发维护手册
+nav:
+- 简介: index.md
+- 部署: deployment.md
+
+theme: readthedocs
