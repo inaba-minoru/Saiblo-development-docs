@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Saiblo - Saiblo 平台开发维护手册</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Saiblo";
+    var mkdocs_page_input_path = "development.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Saiblo 平台开发维护手册</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">简介</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../deployment.md">部署</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Saiblo 平台开发维护手册</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Saiblo</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="saiblo">Saiblo</h1>
+<h2 id="_1">介绍</h2>
+<p>Saiblo 网站是一个通用 AI 游戏平台，支持用户编写 AI 参加比赛或是进行人机对局，支持游戏开发者上传按照开发规范编写的游戏，支持比赛举办者举办关于某个游戏的比赛。</p>
+<h2 id="_2">部署方式</h2>
+<h3 id="docker">Docker (不推荐)</h3>
+<p>使用 Dockerfile 自动化部署</p>
+<pre><code class="bash">docker build -t saiblo .
+docker run -d -p 127.0.0.1:3000:80 --name saiblo saiblo
+docker start saiblo
+</code></pre>
+
+<p>网站将会在 <code>127.0.0.1:3000</code> 上启动，你可以修改为 <code>0.0.0.0:80</code> 监听来自所有地址的链接。这种方法不推荐</p>
+<h3 id="_3">本地部署</h3>
+<p>需要提前安装好 <code>Node.js, python3, redis</code>，其中 <code>redis</code> 需要运行在 <code>6379</code> 端口（可以在 <code>backend/app/settings.py</code> 的 <code>CACHES</code>  处进行配置）。</p>
+<h4 id="_4">安装依赖</h4>
+<pre><code class="bash">cd frontend
+npm install
+cd ../backend
+pip install -r requirements.txt
+</code></pre>
+
+<h4 id="_5">初始化数据库</h4>
+<pre><code class="bash">cd backend
+python manage.py migrate
+python manage.py loadtestdata # 如果有需要，可以载入这套测试数据，包含两个游戏以及若干小组
+</code></pre>
+
+<h4 id="_6">启动前端</h4>
+<pre><code class="bash">cd frontend
+npm run build # 编译前端
+export NUXT_HOST=0.0.0.0 # 指定监听地址
+export NUXT_PORT=80 # 指定端口
+npm run start # 启动前端
+</code></pre>
+
+<h4 id="_7">启动后端</h4>
+<pre><code class="bash">cd backend
+uvicorn app.asgi:application --workers 1 --port 8000 --host 127.0.0.1 # 以 1 个 worker 启动后端，如有需要可以增加 worker 数量，但需要换用 Mysql 等并发友好数据库，否则会在访问过快时死锁
+</code></pre>
+
+<h4 id="_8">可持久化运行</h4>
+<p>推荐使用 <code>supervisor</code> 配置服务，也可使用 <code>tmux</code> 来可持久化运行前后端</p>
+<h4 id="_9">测评端连接</h4>
+<p>测评段需要连接到后端监听的地址，如 <code>127.0.0.1:8000</code>，由于 <code>127.0.0.1:8000/judger/</code> 下的 API 不需要鉴权，所以不要将后端地址暴露出来，前端会有 </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
