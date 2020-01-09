@@ -2,5 +2,6 @@ site_name: Saiblo 平台开发维护手册
 nav:
 - 简介: index.md
 - 部署: deployment.md
+- 前端和评测: frontend2judger.md
 
 theme: readthedocs
